@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "spacelift"
+version = "0.1.0"
+description = ""
+authors = ["Will George <wrgeorge1983@gmail.com>"]
+readme = "README.md"
+packages = [{include = "spacelift", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+gql = {extras = ["requests"], version = "^3.4.1"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
