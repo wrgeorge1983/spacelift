@@ -83,19 +83,21 @@ class Spacelift:
             self._jwt = self._get_jwt()
         return self._jwt
 
-    def get_stacks(self, fields: Optional[list[str]] = None) -> list[dict]:
-        if fields is None:
-            fields = ["id", "space", "administrative", "apiHost"]
-        query_text = f'query Stacks {{ stacks {{ {" ".join(fields)}  }} }}'
+    def get_stacks(self, query_fields: Optional[list[str]] = None) -> list[dict]:
+        if query_fields is None:
+            query_fields = ["id", "space"]
+        query_text = f'query Stacks {{ stacks {{ {" ".join(query_fields)}  }} }}'
         query = gql(query_text)
         return self._execute(query)["stacks"]
 
-    def trigger_run(self, stack_id: str):
+    def trigger_run(self, stack_id: str, query_fields: Optional[list[str]] = None):
+        if query_fields is None:
+            query_fields = ["id", "branch"]
+
         query_text = f"""
         mutation RunTrigger($stack: ID!) {{
             runTrigger(stack: $stack, runType: PROPOSED) {{
-                id
-                branch
+                {" ".join(query_fields)}
             }}
         }}
         """
@@ -111,6 +113,9 @@ class Spacelift:
 def main():
     sl = Spacelift(os.environ.get("SPACELIFT_BASE_URL"))
     result = sl.get_stacks()
+    print(result)
+
+    result = sl.get_stacks(["id", "name", "branch", "namespace", "repository", "state"])
     print(result)
 
 
