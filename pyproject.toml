@@ -1,10 +1,15 @@
 [tool.poetry]
 name = "spacelift"
 version = "0.1.1"
-description = "simple python client for the spacelift GraphQL API"
+description = "simple python client for the spacelift.io GraphQL API"
 authors = ["Will George <wrgeorge1983@gmail.com>"]
 readme = "README.md"
 packages = [{include = "spacelift", from = "src"}]
+license = "Apache-2.0"
+homepage = "https://github.com/wrgeorge1983/spacelift"
+repository = "https://github.com/wrgeorge1983/spacelift"
+keywords = ["spacelift", "spacelift.io", "api", "graphql"]
+
 
 [tool.poetry.dependencies]
 python = "^3.11"
