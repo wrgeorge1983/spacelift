@@ -1,6 +1,7 @@
 .env
-.python-version
+#.python-version
 .idea
 .vscode
 .venv
 venv
+dist/

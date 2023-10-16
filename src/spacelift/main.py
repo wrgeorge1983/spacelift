@@ -106,7 +106,7 @@ class Spacelift:
 
 
 def main():
-    sl = Spacelift("https://apcela.app.spacelift.io/graphql")
+    sl = Spacelift(os.environ.get("SPACELIFT_BASE_URL"))
     result = sl.get_stacks()
     print(result)
     result = sl.trigger_run("mcr-test")
