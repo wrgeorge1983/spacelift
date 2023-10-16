@@ -32,7 +32,10 @@ class Spacelift:
         key_id: Optional[str] = None,
         key_secret: Optional[str] = None,
     ) -> dict:
-        """Ensures each parameter is provided by either the constructor or environment variables."""
+        """
+        Ensures each parameter is provided by either the constructor or environment variables.
+        TODO: add support for spacelift's CLI config file, etc.
+        """
         base_url = base_url or os.environ.get("SPACELIFT_BASE_URL")
         key_id = key_id or os.environ.get("SPACELIFT_KEY_ID")
         key_secret = key_secret or os.environ.get("SPACELIFT_KEY_SECRET")
@@ -108,8 +111,6 @@ class Spacelift:
 def main():
     sl = Spacelift(os.environ.get("SPACELIFT_BASE_URL"))
     result = sl.get_stacks()
-    print(result)
-    result = sl.trigger_run("mcr-test")
     print(result)
 
 
