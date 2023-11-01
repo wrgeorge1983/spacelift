@@ -33,6 +33,19 @@ $ python main.py
 [{'id': 'demo-stack', 'name': 'Demo stack', 'branch': 'showcase', 'namespace': 'spacelift-io', 'repository': 'onboarding', 'state': 'FINISHED'}]
 $ 
 ```
+#### Relevant Methods
+```python
+from spacelift import Spacelift
+sl = Spacelift()
+sl.get_stacks()
+sl.get_stack_by_id(stack_id)
+sl.get_spaces()
+sl.get_space_by_id(space_id)
+sl.get_contexts()
+sl.get_context_by_id(context_id)
+
+sl.trigger_run(stack_id)
+```
 ### Environment Variables
 the `Spacelift` object can also infer its parameters from the following environment variables:
 

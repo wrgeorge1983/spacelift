@@ -90,6 +90,50 @@ class Spacelift:
         query = gql(query_text)
         return self._execute(query)["stacks"]
 
+    def get_stack_by_id(self, stack_id: str, query_fields: Optional[list[str]] = None) -> dict:
+        if query_fields is None:
+            query_fields = ["id", "space"]
+        query_text = f'query Stack($id: ID!) {{ stack(id: $id) {{ {" ".join(query_fields)}  }} }}'
+        variable_values = {
+            "id": stack_id,
+        }
+        query = gql(query_text)
+        return self._execute(query, variable_values=variable_values)["stack"]
+
+    def get_spaces(self, query_fields: Optional[list[str]] = None) -> list[dict]:
+        if query_fields is None:
+            query_fields = ["id", "name"]
+        query_text = f'query Spaces {{ spaces {{ {" ".join(query_fields)}  }} }}'
+        query = gql(query_text)
+        return self._execute(query)["spaces"]
+
+    def get_space_by_id(self, space_id: str, query_fields: Optional[list[str]] = None) -> dict:
+        if query_fields is None:
+            query_fields = ["id", "name"]
+        query_text = f'query Space($id: ID!) {{ space(id: $id) {{ {" ".join(query_fields)}  }} }}'
+        variable_values = {
+            "id": space_id,
+        }
+        query = gql(query_text)
+        return self._execute(query, variable_values=variable_values)["space"]
+
+    def get_contexts(self, query_fields: Optional[list[str]] = None) -> list[dict]:
+        if query_fields is None:
+            query_fields = ["id", "name"]
+        query_text = f'query Contexts {{ contexts {{ {" ".join(query_fields)}  }} }}'
+        query = gql(query_text)
+        return self._execute(query)["contexts"]
+
+    def get_context_by_id(self, context_id: str, query_fields: Optional[list[str]] = None) -> dict:
+        if query_fields is None:
+            query_fields = ["id", "name", ]
+        query_text = f'query Context($id: ID!) {{ context(id: $id) {{ {" ".join(query_fields)}  }} }}'
+        variable_values = {
+            "id": context_id,
+        }
+        query = gql(query_text)
+        return self._execute(query, variable_values=variable_values)["context"]
+
     def trigger_run(self, stack_id: str, query_fields: Optional[list[str]] = None):
         if query_fields is None:
             query_fields = ["id", "branch"]
@@ -112,10 +156,13 @@ class Spacelift:
 
 def main():
     sl = Spacelift(os.environ.get("SPACELIFT_BASE_URL"))
-    result = sl.get_stacks()
-    print(result)
+    # result = sl.get_stacks()
+    # print(result)
+    #
+    # result = sl.get_stacks(["id", "name", "branch", "namespace", "repository", "state"])
+    # print(result)
 
-    result = sl.get_stacks(["id", "name", "branch", "namespace", "repository", "state"])
+    result = sl.get_context_by_id(context_id="customer-a", query_fields=["id", "name", "config { id value writeOnly }"])
     print(result)
 
 
