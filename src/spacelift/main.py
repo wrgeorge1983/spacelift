@@ -12,10 +12,10 @@ log = getLogger(__name__)
 
 class Spacelift:
     def __init__(
-            self,
-            base_url: Optional[str] = None,
-            key_id: Optional[str] = None,
-            key_secret: Optional[str] = None,
+        self,
+        base_url: Optional[str] = None,
+        key_id: Optional[str] = None,
+        key_secret: Optional[str] = None,
     ):
         params = self._validate_params(base_url, key_id, key_secret)
         self.base_url = params["base_url"]
@@ -28,9 +28,9 @@ class Spacelift:
 
     @staticmethod
     def _validate_params(
-            base_url: Optional[str] = None,
-            key_id: Optional[str] = None,
-            key_secret: Optional[str] = None,
+        base_url: Optional[str] = None,
+        key_id: Optional[str] = None,
+        key_secret: Optional[str] = None,
     ) -> dict:
         """
         Ensures each parameter is provided by either the constructor or environment variables.
@@ -50,7 +50,7 @@ class Spacelift:
         return result
 
     def _execute(
-            self, query: DocumentNode, variable_values: Optional[dict] = None
+        self, query: DocumentNode, variable_values: Optional[dict] = None
     ) -> dict:
         self.transport.headers["Authorization"] = f"Bearer {self.jwt}"
         return self.client.execute(query, variable_values=variable_values)
@@ -90,7 +90,9 @@ class Spacelift:
         query = gql(query_text)
         return self._execute(query)["stacks"]
 
-    def get_stack_by_id(self, stack_id: str, query_fields: Optional[list[str]] = None) -> dict:
+    def get_stack_by_id(
+        self, stack_id: str, query_fields: Optional[list[str]] = None
+    ) -> dict:
         if query_fields is None:
             query_fields = ["id", "space"]
         query_text = f'query Stack($id: ID!) {{ stack(id: $id) {{ {" ".join(query_fields)}  }} }}'
@@ -107,7 +109,9 @@ class Spacelift:
         query = gql(query_text)
         return self._execute(query)["spaces"]
 
-    def get_space_by_id(self, space_id: str, query_fields: Optional[list[str]] = None) -> dict:
+    def get_space_by_id(
+        self, space_id: str, query_fields: Optional[list[str]] = None
+    ) -> dict:
         if query_fields is None:
             query_fields = ["id", "name"]
         query_text = f'query Space($id: ID!) {{ space(id: $id) {{ {" ".join(query_fields)}  }} }}'
@@ -124,9 +128,14 @@ class Spacelift:
         query = gql(query_text)
         return self._execute(query)["contexts"]
 
-    def get_context_by_id(self, context_id: str, query_fields: Optional[list[str]] = None) -> dict:
+    def get_context_by_id(
+        self, context_id: str, query_fields: Optional[list[str]] = None
+    ) -> dict:
         if query_fields is None:
-            query_fields = ["id", "name", ]
+            query_fields = [
+                "id",
+                "name",
+            ]
         query_text = f'query Context($id: ID!) {{ context(id: $id) {{ {" ".join(query_fields)}  }} }}'
         variable_values = {
             "id": context_id,
@@ -134,7 +143,14 @@ class Spacelift:
         query = gql(query_text)
         return self._execute(query, variable_values=variable_values)["context"]
 
-    def create_context(self, context_name: str, space_id: str, description: str = '', labels: list[str] = None, envvars: list[dict] = None):
+    def create_context(
+        self,
+        context_name: str,
+        space_id: str,
+        description: str = "",
+        labels: list[str] = None,
+        envvars: list[dict] = None,
+    ):
         if labels is None:
             labels = []
         if envvars is None:
@@ -182,7 +198,14 @@ class Spacelift:
         log.debug(f"delete_context result: {result}")
         return result
 
-    def create_space(self, space_name: str, parent_space_id: str, description: str, labels: list[str] = None, inherit_entities: bool = True):
+    def create_space(
+        self,
+        space_name: str,
+        parent_space_id: str,
+        description: str,
+        labels: list[str] = None,
+        inherit_entities: bool = True,
+    ):
         if labels is None:
             labels = []
 
@@ -224,8 +247,6 @@ class Spacelift:
         log.debug(f"delete_space result: {result}")
         return result
 
-
-
     def trigger_run(self, stack_id: str, query_fields: Optional[list[str]] = None):
         if query_fields is None:
             query_fields = ["id", "branch"]
@@ -258,14 +279,29 @@ def main():
     LIBRARY_TEST_NAME = "library-test-customer-a"
 
     try:
-        result = sl.create_context(context_name=LIBRARY_TEST_NAME, space_id="root", envvars=[
-            {"id": "FOO", "value": "bar", "type": "ENVIRONMENT_VARIABLE", "writeOnly": False},
-            {"id": "BAZ", "value": "qux", "type": "ENVIRONMENT_VARIABLE", "writeOnly": True}])
-        print(f'create_context result: {result}')
+        result = sl.create_context(
+            context_name=LIBRARY_TEST_NAME,
+            space_id="root",
+            envvars=[
+                {
+                    "id": "FOO",
+                    "value": "bar",
+                    "type": "ENVIRONMENT_VARIABLE",
+                    "writeOnly": False,
+                },
+                {
+                    "id": "BAZ",
+                    "value": "qux",
+                    "type": "ENVIRONMENT_VARIABLE",
+                    "writeOnly": True,
+                },
+            ],
+        )
+        print(f"create_context result: {result}")
 
     except Exception as e:
         result = sl.delete_context(context_id=LIBRARY_TEST_NAME)
-        print(f'delete_context result: {result}')
+        print(f"delete_context result: {result}")
 
     spaces = sl.get_spaces()
 
@@ -275,12 +311,17 @@ def main():
     for space in delete_spaces:
         print(space["id"])
         result = sl.delete_space(space_id=space["id"])
-        print(f'delete_space result: {result}')
+        print(f"delete_space result: {result}")
 
     if not spaces:
-        result = sl.create_space(space_name=LIBRARY_TEST_NAME, parent_space_id="root", description=f"{LIBRARY_TEST_NAME} space", labels=["customer", "a"])
+        result = sl.create_space(
+            space_name=LIBRARY_TEST_NAME,
+            parent_space_id="root",
+            description=f"{LIBRARY_TEST_NAME} space",
+            labels=["customer", "a"],
+        )
 
-        print(f'create_space result: {result}')
+        print(f"create_space result: {result}")
 
 
 if __name__ == "__main__":
