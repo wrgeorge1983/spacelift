@@ -12,10 +12,10 @@ log = getLogger(__name__)
 
 class Spacelift:
     def __init__(
-        self,
-        base_url: Optional[str] = None,
-        key_id: Optional[str] = None,
-        key_secret: Optional[str] = None,
+            self,
+            base_url: Optional[str] = None,
+            key_id: Optional[str] = None,
+            key_secret: Optional[str] = None,
     ):
         params = self._validate_params(base_url, key_id, key_secret)
         self.base_url = params["base_url"]
@@ -28,9 +28,9 @@ class Spacelift:
 
     @staticmethod
     def _validate_params(
-        base_url: Optional[str] = None,
-        key_id: Optional[str] = None,
-        key_secret: Optional[str] = None,
+            base_url: Optional[str] = None,
+            key_id: Optional[str] = None,
+            key_secret: Optional[str] = None,
     ) -> dict:
         """
         Ensures each parameter is provided by either the constructor or environment variables.
@@ -50,7 +50,7 @@ class Spacelift:
         return result
 
     def _execute(
-        self, query: DocumentNode, variable_values: Optional[dict] = None
+            self, query: DocumentNode, variable_values: Optional[dict] = None
     ) -> dict:
         self.transport.headers["Authorization"] = f"Bearer {self.jwt}"
         return self.client.execute(query, variable_values=variable_values)
@@ -134,6 +134,98 @@ class Spacelift:
         query = gql(query_text)
         return self._execute(query, variable_values=variable_values)["context"]
 
+    def create_context(self, context_name: str, space_id: str, description: str = '', labels: list[str] = None, envvars: list[dict] = None):
+        if labels is None:
+            labels = []
+        if envvars is None:
+            envvars = []
+
+        query_text = f"""
+        mutation ContextCreateV2($name: String!, $envvars: [ConfigInput!], $space: ID, $description: String, $labels: [String!]) {{
+            contextCreateV2(input: {{name: $name, configAttachments: $envvars, space: $space, description: $description, labels: $labels }}) {{
+                id
+                name
+                config {{
+                    id
+                    value
+                }}
+            }}
+        }}
+        """
+
+        variable_values = {
+            "name": context_name,
+            "description": description,
+            "labels": labels,
+            "space": space_id,
+            "envvars": envvars,
+        }
+
+        query = gql(query_text)
+        result = self._execute(query, variable_values=variable_values)
+        log.debug(f"create_context result: {result}")
+        return result
+
+    def delete_context(self, context_id: str):
+        query_text = f"""
+        mutation ContextDelete($id: ID!) {{
+            contextDelete(id: $id) {{
+                id
+            }}
+        }}
+        """
+        variable_values = {
+            "id": context_id,
+        }
+        query = gql(query_text)
+        result = self._execute(query, variable_values=variable_values)
+        log.debug(f"delete_context result: {result}")
+        return result
+
+    def create_space(self, space_name: str, parent_space_id: str, description: str, labels: list[str] = None, inherit_entities: bool = True):
+        if labels is None:
+            labels = []
+
+        query_text = f"""
+        mutation SpaceCreate($name: String!, $parent: ID!, $description: String!, $labels: [String!], $inheritEntities: Boolean!) {{
+            spaceCreate(input: {{name: $name, parentSpace: $parent, description: $description, labels: $labels, inheritEntities: $inheritEntities}}) {{
+                id
+                name
+                description
+                labels
+            }}
+        }}
+        """
+        variable_values = {
+            "name": space_name,
+            "parent": parent_space_id,
+            "description": description,
+            "labels": labels,
+            "inheritEntities": inherit_entities,
+        }
+        query = gql(query_text)
+        result = self._execute(query, variable_values=variable_values)
+        log.debug(f"create_space result: {result}")
+        return result
+
+    def delete_space(self, space_id: str):
+        query_text = f"""
+        mutation SpaceDelete($id: ID!) {{
+            spaceDelete(space: $id) {{
+                id
+            }}
+        }}
+        """
+        variable_values = {
+            "id": space_id,
+        }
+        query = gql(query_text)
+        result = self._execute(query, variable_values=variable_values)
+        log.debug(f"delete_space result: {result}")
+        return result
+
+
+
     def trigger_run(self, stack_id: str, query_fields: Optional[list[str]] = None):
         if query_fields is None:
             query_fields = ["id", "branch"]
@@ -162,8 +254,33 @@ def main():
     # result = sl.get_stacks(["id", "name", "branch", "namespace", "repository", "state"])
     # print(result)
 
-    result = sl.get_context_by_id(context_id="customer-a", query_fields=["id", "name", "config { id value writeOnly }"])
+    # result = sl.get_context_by_id(context_id="customer-a", query_fields=["id", "name", "config { id value writeOnly }"])
+    LIBRARY_TEST_NAME = "library-test-customer-a"
+
+    try:
+        result = sl.create_context(context_name=LIBRARY_TEST_NAME, space_id="root", envvars=[
+            {"id": "FOO", "value": "bar", "type": "ENVIRONMENT_VARIABLE", "writeOnly": False},
+            {"id": "BAZ", "value": "qux", "type": "ENVIRONMENT_VARIABLE", "writeOnly": True}])
+        print(f'create_context result: {result}')
+
+    except Exception as e:
+        result = sl.delete_context(context_id=LIBRARY_TEST_NAME)
+        print(f'delete_context result: {result}')
+
+    spaces = sl.get_spaces()
+
+    delete_spaces = [space for space in spaces if space["name"] == LIBRARY_TEST_NAME]
     print(result)
+
+    for space in delete_spaces:
+        print(space["id"])
+        result = sl.delete_space(space_id=space["id"])
+        print(f'delete_space result: {result}')
+
+    if not spaces:
+        result = sl.create_space(space_name=LIBRARY_TEST_NAME, parent_space_id="root", description=f"{LIBRARY_TEST_NAME} space", labels=["customer", "a"])
+
+        print(f'create_space result: {result}')
 
 
 if __name__ == "__main__":
