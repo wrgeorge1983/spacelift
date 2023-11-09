@@ -271,12 +271,26 @@ def main():
     sl = Spacelift(os.environ.get("SPACELIFT_BASE_URL"))
     # result = sl.get_stacks()
     # print(result)
+    # result = sl.get_stack_by_id(stack_id="mcr-tf", query_fields=["id", "name"])
+    # print(result)
     #
     # result = sl.get_stacks(["id", "name", "branch", "namespace", "repository", "state"])
     # print(result)
 
     # result = sl.get_context_by_id(context_id="customer-a", query_fields=["id", "name", "config { id value writeOnly }"])
     LIBRARY_TEST_NAME = "library-test-customer-a"
+
+    result = sl.get_contexts(
+        query_fields=["id", "name", "config { id value writeOnly }"]
+    )
+    print(result[0])
+
+    try:
+        print('deleting context_id="abc"')
+        result = sl.delete_context(context_id="abc")
+        print(f"delete_context(context_id='abc') result: {result}")
+    except Exception as e:
+        print(f"exception: {type(e)}:{e}")
 
     try:
         result = sl.create_context(
@@ -300,20 +314,22 @@ def main():
         print(f"create_context result: {result}")
 
     except Exception as e:
+        print(f"create_context exception: {type(e)}:{e}")
         result = sl.delete_context(context_id=LIBRARY_TEST_NAME)
         print(f"delete_context result: {result}")
 
-    spaces = sl.get_spaces()
+    spaces = sl.get_spaces(query_fields=["id", "name", "description", "parentSpace"])
+    print(spaces)
 
     delete_spaces = [space for space in spaces if space["name"] == LIBRARY_TEST_NAME]
-    print(result)
+    print(delete_spaces)
 
     for space in delete_spaces:
         print(space["id"])
         result = sl.delete_space(space_id=space["id"])
         print(f"delete_space result: {result}")
 
-    if not spaces:
+    if not delete_spaces:
         result = sl.create_space(
             space_name=LIBRARY_TEST_NAME,
             parent_space_id="root",

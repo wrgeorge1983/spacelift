@@ -67,3 +67,6 @@ The `Spacelift` object also has a `_execute` method that accepts a raw GraphQL q
 sending a valid GraphQL query string to `gql.gql()` from the [gql package](https://pypi.org/project/gql/).  This is 
 necessary for more advanced queries.
 
+### Mocked Version
+There's also a mocked version `MockedSpacelift` that can be used for testing.  It offers mocked versions of all the 
+CRUD methods without any real API calls. 
